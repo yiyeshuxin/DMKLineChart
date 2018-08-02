@@ -29,7 +29,7 @@ TODO: Add long description of the pod here.
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '8.0'
-
+  s.platform     = :ios, "8.0"
   s.source_files = 'DMKLineChart/Classes/**/*'
   
   # s.resource_bundles = {
