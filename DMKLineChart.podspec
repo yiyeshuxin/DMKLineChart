@@ -19,7 +19,8 @@ Pod::Spec.new do |s|
 
   s.description      = <<-DESC
                      纯Swift4.0代码编写的K线图表组件，支持：MA,EMA,KDJ,MACD等技术指标显示。集成使用简单，二次开发扩展强大
-                     DESC-https://github.com/zhiquan911/CHKLineChart
+                     -https://github.com/zhiquan911/CHKLineChart
+                     DESC
 
   s.homepage         = 'https://github.com/yiyeshuxin/DMKLineChart'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
