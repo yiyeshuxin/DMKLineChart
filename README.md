@@ -22,7 +22,7 @@ pod 'DMKLineChart'
 
 ## Author
 
-yiyeshuxin, lyh13@meitu.com
+yiyeshuxin
 
 ## License
 
