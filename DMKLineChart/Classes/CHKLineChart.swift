@@ -428,6 +428,7 @@ open class CHKLineChartView: UIView {
                 self.datas = algorithm.handleAlgorithm(self.datas)
             }
         }
+        self.selectedIndex = self.datas.count - 1
     }
     
     
