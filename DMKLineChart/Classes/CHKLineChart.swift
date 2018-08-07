@@ -261,6 +261,9 @@ open class CHKLineChartView: UIView {
     /// 图表数据信息显示层，显示每个分区的数值内容
     var chartInfoLayer: CHShapeLayer = CHShapeLayer()
     
+    /// pan手势是否识别
+    var isPanRecognized: Bool = false
+    
     open var style: CHKLineChartStyle! {           //显示样式
         didSet {
             //重新配置样式
@@ -1642,7 +1645,25 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         
         if otherGestureRecognizer.view is UITableView{
-            
+            // 判断
+            if gestureRecognizer is UIPanGestureRecognizer {
+                switch gestureRecognizer.state {
+                case UIGestureRecognizerState.began:
+                    if let panGesture = gestureRecognizer as? UIPanGestureRecognizer {
+                        let velocity = panGesture.velocity(in: panGesture.view)
+                        let velocityX = fabs(velocity.x)
+                        let velocityY = fabs(velocity.y)
+                        let isPanOnY = velocityY > velocityX - 50.0 ||
+                            (velocityY > 400.0 && velocityY > velocityX) ||
+                            (velocityX < 5.0 && velocityY > 20)
+                        print("gestureRecognizer:began", isPanOnY)
+                        return isPanOnY
+                    }
+
+                default:
+                    return true
+                }
+            }
             return true
         }
         
@@ -1658,7 +1679,7 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
         guard self.enablePan else {
             return
         }
-        
+        //
         self.showSelection = false
         
         //手指滑动总平移量
@@ -1677,9 +1698,19 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
         
         switch sender.state {
         case .began:
+            let velocityX = fabs(velocity.x)
+            let velocityY = fabs(velocity.y)
+            if velocityY > velocityX - 50.0 || velocityY > 500.0 {
+                isPanRecognized = false
+                print("gestureRecognizer:doPanAction:", isPanRecognized)
+                return
+            }
+            isPanRecognized = true
             self.animator.removeAllBehaviors()
         case .changed:
-            
+            if !isPanRecognized {
+                return
+            }
             //计算移动距离的绝对值，距离满足超过线条宽度就进行图表平移刷新
             let distance = fabs(translation.x)
 //            print("translation.x = \(translation.x)")
@@ -1693,7 +1724,9 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
             }
             
         case .ended, .cancelled:
-            
+            if !isPanRecognized {
+                return
+            }
             //重置减速开始
             self.decelerationStartX = 0
             //添加减速行为
