@@ -148,6 +148,10 @@ extension CHSection {
             
             
         }
+        // 如果传入的数据相同（价格不变，出现异常）
+        if self.yAxis.max - self.yAxis.min < 0.0002 {
+            self.yAxis.min = self.yAxis.max - 0.0002
+        }
     }
     
     /// 绘制header上的标题信息
