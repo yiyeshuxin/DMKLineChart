@@ -91,12 +91,50 @@ public extension CGFloat {
      - returns:
      */
     func ch_toString(_ minF: Int = 2, maxF: Int = 6, minI: Int = 1) -> String {
+        var decimal = maxF
+        if decimal == -1 {
+            var dValue = Double(self)
+            if dValue < 0 {
+                dValue *= -1
+            }
+            if dValue < 0.000001 {
+                decimal = 8
+            } else if dValue < 0.0001 {
+                decimal = 6
+            } else if dValue < 0.01 {
+                decimal = 4
+            } else {
+                decimal = 2
+            }
+            //
+        }
         let valueDecimalNumber = NSDecimalNumber(value: Double(self) as Double)
         let twoDecimalPlacesFormatter = NumberFormatter()
-        twoDecimalPlacesFormatter.maximumFractionDigits = maxF
+        twoDecimalPlacesFormatter.maximumFractionDigits = decimal
         twoDecimalPlacesFormatter.minimumFractionDigits = minF
         twoDecimalPlacesFormatter.minimumIntegerDigits = minI
-        return twoDecimalPlacesFormatter.string(from: valueDecimalNumber)!
+        return twoDecimalPlacesFormatter.string(from: valueDecimalNumber)!.ch_tsubStringRemoveRedundantZero()
+    }
+}
+
+extension String {
+    func ch_tsubStringRemoveRedundantZero() -> String {
+        var temp = String(self)
+        while temp.count > 1 {
+            if let lastChar = temp.last {
+                if lastChar == "0" {
+                    temp.removeLast()
+                    continue
+                }
+                // 可能有负号的出现
+                if lastChar == "." {
+                    temp.removeLast()
+                    break
+                }
+            }
+            break
+        }
+        return temp
     }
 }
 
