@@ -107,7 +107,7 @@ open class CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer {
+    open func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer {
         return CAShapeLayer()
     }
 }
@@ -126,7 +126,7 @@ open class CHLineModel: CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open override func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer {
+    open override func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer {
         
         let serieLayer = CAShapeLayer()
         
@@ -138,7 +138,7 @@ open class CHLineModel: CHChartModel {
         modelLayer.lineJoin = kCALineJoinBevel
         
         //每个点的间隔宽度
-        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(endIndex - startIndex)
+        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(count)
         
         //使用bezierPath画线段
         let linePath = UIBezierPath()
@@ -229,14 +229,14 @@ open class CHCandleModel: CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open override func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer {
+    open override func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer {
         
         let serieLayer = CAShapeLayer()
         
         let modelLayer = CAShapeLayer()
         
         //每个点的间隔宽度
-        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(endIndex - startIndex)
+        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(count)
         var plotPadding = plotWidth * self.plotPaddingExt
         plotPadding = plotPadding < 0.25 ? 0.25 : plotPadding
         
@@ -389,14 +389,14 @@ open class CHColumnModel: CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open override func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer {
+    open override func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer {
         
         let serieLayer = CAShapeLayer()
         
         let modelLayer = CAShapeLayer()
         
         //每个点的间隔宽度
-        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(endIndex - startIndex)
+        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(count)
         var plotPadding = plotWidth * self.plotPaddingExt
         plotPadding = plotPadding < 0.25 ? 0.25 : plotPadding
         
@@ -469,14 +469,14 @@ open class CHBarModel: CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open override func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer{
+    open override func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer{
         
         let serieLayer = CAShapeLayer()
         
         let modelLayer = CAShapeLayer()
         
         //每个点的间隔宽度
-        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(endIndex - startIndex)
+        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(count)
         var plotPadding = plotWidth * self.plotPaddingExt
         plotPadding = plotPadding < 0.25 ? 0.25 : plotPadding
         
@@ -562,7 +562,7 @@ open class CHRoundModel: CHChartModel {
      - parameter endIndex:       结束索引
      - parameter plotPaddingExt: 点与点之间间断所占点宽的比例
      */
-    open override func drawSerie(_ startIndex: Int, endIndex: Int) -> CAShapeLayer {
+    open override func drawSerie(_ startIndex: Int, endIndex: Int, count: Int) -> CAShapeLayer {
         
         let serieLayer = CAShapeLayer()
         
@@ -574,7 +574,7 @@ open class CHRoundModel: CHChartModel {
         modelLayer.lineJoin = kCALineJoinBevel
         
         //每个点的间隔宽度
-        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(endIndex - startIndex)
+        let plotWidth = (self.section.frame.size.width - self.section.padding.left - self.section.padding.right) / CGFloat(count)
         var plotPadding = plotWidth * self.plotPaddingExt
         plotPadding = plotPadding < 0.25 ? 0.25 : plotPadding
         

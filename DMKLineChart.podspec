@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'DMKLineChart'
-  s.version          = '1.1.0'
+  s.version          = '1.1.1'
   s.summary          = '纯Swift4.0代码编写的K线图表组件.'
 
 # This description is used to generate tags and improve search results.

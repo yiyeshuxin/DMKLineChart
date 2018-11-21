@@ -156,7 +156,7 @@ open class CHKLineChartView: UIView {
     
     /// MARK: - 常量
     let kMinRange = 13       //最小缩放范围
-    let kMaxRange = 133     //最大缩放范围
+    let kMaxRange = 100     //最大缩放范围
     let kPerInterval = 4    //缩放的每段间隔
     open let kYAxisLabelWidth: CGFloat = 46        //默认宽度
     open let kXAxisHegiht: CGFloat = 16        //默认X坐标的高度
@@ -223,7 +223,7 @@ open class CHKLineChartView: UIView {
     var plotCount: Int = 0
     var rangeFrom: Int = 0                          //可见区域的开始索引位
     var rangeTo: Int = 0                            //可见区域的结束索引位
-    open var range: Int = 77                             //显示在可见区域的个数
+    open var rangeLimited: Int = 77
     var borderColor: UIColor = UIColor.gray
     open var labelSize = CGSize(width: 40, height: 16)
     
@@ -393,12 +393,6 @@ open class CHKLineChartView: UIView {
         longPress.minimumPressDuration = 0.5
         self.addGestureRecognizer(longPress)
         
-        
-        //加载一个初始化的Range值
-        if let userRange = self.delegate?.initRangeInKLineChart?(in: self) {
-            self.range = userRange
-        }
-        
         //初始数据
         self.resetData()
         
@@ -520,7 +514,7 @@ open class CHKLineChartView: UIView {
         self.selectedPoint = point
         
         //每个点的间隔宽度
-        let plotWidth = (section!.frame.size.width - section!.padding.left - section!.padding.right) / CGFloat(self.rangeTo - self.rangeFrom)
+        let plotWidth = (section!.frame.size.width - section!.padding.left - section!.padding.right) / CGFloat(rangeLimited)
         
         var yVal: CGFloat = 0        //获取y轴坐标的实际值
         
@@ -581,7 +575,7 @@ open class CHKLineChartView: UIView {
                 case .none:
                     self.selectedYAxisLabel?.isHidden = true
                 }
-                self.selectedYAxisLabel?.text = String(format: format, yVal)     //显示实际值
+                self.selectedYAxisLabel?.text = yVal.ch_toString(maxF: section!.decimal)//String(format: format, yVal)     //显示实际值
                 //
                 if self.showXAxisSelectedLabel == .left {
                     yAxisStartX = section!.frame.origin.x
@@ -817,7 +811,7 @@ extension CHKLineChartView {
     fileprivate func initChart() -> Bool {
         
         self.plotCount = self.delegate?.numberOfPointsInKLineChart(chart: self) ?? 0
-        
+//        self.rangeLimited = self.delegate?.initRangeInKLineChart?(in: self) ?? 0
         //数据条数不一致，需要重新计算
         if self.plotCount != self.datas.count {
             self.resetData()
@@ -827,7 +821,7 @@ extension CHKLineChartView {
             
             //如果显示全部，显示范围为全部数据量
             if self.isShowAll {
-                self.range = self.plotCount
+                self.rangeLimited = self.plotCount
                 self.rangeFrom = 0
                 self.rangeTo = self.plotCount
             }
@@ -843,16 +837,16 @@ extension CHKLineChartView {
             
             if self.scrollToPosition == .top {
                 self.rangeFrom = 0
-                if self.rangeFrom + self.range < self.plotCount {
-                    self.rangeTo = self.rangeFrom + self.range   //计算结束的显示的位置
+                if self.rangeFrom + self.rangeLimited < self.plotCount {
+                    self.rangeTo = self.rangeFrom + self.rangeLimited   //计算结束的显示的位置
                 } else {
                     self.rangeTo = self.plotCount
                 }
                 self.selectedIndex = -1
             } else if self.scrollToPosition == .end {
                 self.rangeTo = self.plotCount               //默认是数据最后一条为尽头
-                if self.rangeTo - self.range > 0 {          //如果尽头 - 默认显示数大于0
-                    self.rangeFrom = self.rangeTo - range   //计算开始的显示的位置
+                if self.rangeTo - self.rangeLimited > 0 {          //如果尽头 - 默认显示数大于0
+                    self.rangeFrom = self.rangeTo - rangeLimited   //计算开始的显示的位置
                 } else {
                     self.rangeFrom = 0
                 }
@@ -978,7 +972,7 @@ extension CHKLineChartView {
         let secPaddingRight: CGFloat = section.padding.right
         
         //x轴分平均分4个间断，显示5个x轴坐标，按照图表的值个数，计算每个间断的个数
-        let dataRange = self.rangeTo - self.rangeFrom
+        let dataRange = rangeLimited//self.rangeTo - self.rangeFrom
         var xTickInterval: Int = dataRange / self.xAxisPerInterval
         if xTickInterval <= 0 {
             xTickInterval = 1
@@ -986,12 +980,12 @@ extension CHKLineChartView {
         
         //绘制x轴标签
         //每个点的间隔宽度
-        let perPlotWidth: CGFloat = (secWidth - secPaddingLeft - secPaddingRight) / CGFloat(self.rangeTo - self.rangeFrom)
+        let perPlotWidth: CGFloat = (secWidth - secPaddingLeft - secPaddingRight) / CGFloat(rangeLimited)
         let startY = section.frame.maxY
         var k: Int = 0
         var showXAxisReference = false
         //相当 for var i = self.rangeFrom; i < self.rangeTo; i = i + xTickInterval
-        for i in stride(from: self.rangeFrom, to: self.rangeTo, by: xTickInterval) {
+        for i in stride(from: self.rangeFrom, to: self.rangeFrom+rangeLimited+1, by: xTickInterval) {
             
             let xLabel = self.delegate?.kLineChart?(chart: self, labelOnXAxisForIndex: i) ?? ""
             var textSize = xLabel.ch_sizeWithConstrained(self.labelFont)
@@ -1349,7 +1343,7 @@ extension CHKLineChartView {
         if !serie.hidden {
             //循环画出每个模型的线
             for model in serie.chartModels {
-                let serieLayer = model.drawSerie(self.rangeFrom, endIndex: self.rangeTo)
+                let serieLayer = model.drawSerie(self.rangeFrom, endIndex: self.rangeTo, count: self.rangeLimited)
                 serie.seriesLayer.addSublayer(serieLayer)
                 
             }
@@ -1367,6 +1361,9 @@ extension CHKLineChartView {
      刷新视图
      */
     public func reloadData(toPosition: CHChartViewScrollPosition = .none, resetData: Bool = true) {
+        if let userRange = self.delegate?.initRangeInKLineChart?(in: self) {
+            self.rangeLimited = userRange
+        }
         self.scrollToPosition = toPosition
         if resetData {
             self.resetData()
@@ -1470,55 +1467,76 @@ extension CHKLineChartView {
         
         if enlarge {
             //双指张开
-            newRangeTo = self.rangeTo - interval
-            newRangeFrom = self.rangeFrom + interval
-            newRange = self.rangeTo - self.rangeFrom
-            if newRange >= kMinRange {
-                
-                if self.plotCount > self.rangeTo - self.rangeFrom {
-                    if newRangeFrom < self.rangeTo {
-                        self.rangeFrom = newRangeFrom
-                    }
-                    if newRangeTo > self.rangeFrom {
-                        self.rangeTo = newRangeTo
-                    }
-                }else{
-                    if newRangeTo > self.rangeFrom {
-                        self.rangeTo = newRangeTo
-                    }
-                }
-                self.range = self.rangeTo - self.rangeFrom
-                self.drawLayerView()
-            }
-            
-        } else {
-            //双指合拢
-            newRangeTo = self.rangeTo + interval
-            newRangeFrom = self.rangeFrom - interval
-            newRange = self.rangeTo - self.rangeFrom
-            if newRange <= kMaxRange {
-                
-                if newRangeFrom >= 0 {
-                    self.rangeFrom = newRangeFrom
-                } else {
+            if self.plotCount < self.rangeLimited {
+                if self.rangeLimited > kMinRange {
                     self.rangeFrom = 0
-                    newRangeTo = newRangeTo - newRangeFrom //补充负数位到头部
-                }
-                if newRangeTo <= self.plotCount {
-                    self.rangeTo = newRangeTo
-                    
-                } else {
                     self.rangeTo = self.plotCount
-                    newRangeFrom = newRangeFrom - (newRangeTo - self.plotCount)
-                    if newRangeFrom < 0 {
-                        self.rangeFrom = 0
-                    } else {
-                        self.rangeFrom = newRangeFrom
+                    self.rangeLimited -= interval
+                    if self.rangeLimited < kMinRange {
+                        self.rangeLimited = kMinRange
                     }
+                    self.drawLayerView()
                 }
-                self.range = self.rangeTo - self.rangeFrom
-                self.drawLayerView()
+            } else {
+                if self.rangeLimited > kMinRange {
+                    self.rangeLimited -= 2*interval
+                    if self.rangeLimited < kMinRange {
+                        self.rangeLimited = kMinRange
+                    }
+                    
+                    self.rangeFrom += interval
+                    let maxStart = self.plotCount - self.rangeLimited
+                    if self.rangeFrom > maxStart {
+                        self.rangeFrom = maxStart
+                    }
+                    self.rangeTo = self.rangeFrom + rangeLimited
+                    self.drawLayerView()
+                }
             }
+
+        } else {
+            if self.plotCount < self.rangeLimited {
+                if self.rangeLimited < kMaxRange {
+                    self.rangeFrom = 0
+                    self.rangeTo = self.plotCount
+                    self.rangeLimited += interval
+                    if self.rangeLimited > kMaxRange {
+                        self.rangeLimited = kMaxRange
+                    }
+                    self.drawLayerView()
+                }
+            } else {
+                //双指合拢
+                newRangeTo = self.rangeTo + interval
+                newRangeFrom = self.rangeFrom - interval
+                if self.rangeLimited < kMaxRange {
+                    self.rangeLimited += 2*interval
+                    if self.rangeLimited < kMinRange {
+                        self.rangeLimited = kMinRange
+                    }
+                    
+                    if newRangeFrom >= 0 {
+                        self.rangeFrom = newRangeFrom
+                    } else {
+                        self.rangeFrom = 0
+                        newRangeTo = newRangeTo - newRangeFrom //补充负数位到头部
+                    }
+                    if newRangeTo <= self.plotCount {
+                        self.rangeTo = newRangeTo
+                        
+                    } else {
+                        self.rangeTo = self.plotCount
+                        newRangeFrom = newRangeFrom - (newRangeTo - self.plotCount)
+                        if newRangeFrom < 0 {
+                            self.rangeFrom = 0
+                        } else {
+                            self.rangeFrom = newRangeFrom
+                        }
+                    }
+                    self.drawLayerView()
+                }
+            }
+        
         }
         
     }
@@ -1539,9 +1557,8 @@ extension CHKLineChartView {
                         self.rangeTo   -= interval
                         
                     } else {
-                        self.rangeFrom = 0
                         self.rangeTo -= self.rangeFrom
-                        
+                        self.rangeFrom = 0
                     }
                     self.drawLayerView()
                 }
@@ -1555,14 +1572,11 @@ extension CHKLineChartView {
                     } else {
                         self.rangeFrom += self.plotCount - self.rangeTo
                         self.rangeTo  = self.plotCount
-                        
-                        
                     }
                     self.drawLayerView()
                 }
             }
         }
-        self.range = self.rangeTo - self.rangeFrom
     }
     
     /// 生成截图
@@ -1694,7 +1708,7 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
         }
         
         //该分区每个点的间隔宽度
-        let plotWidth = (section.frame.size.width - section.padding.left - section.padding.right) / CGFloat(self.rangeTo - self.rangeFrom)
+        let plotWidth = (section.frame.size.width - section.padding.left - section.padding.right) / CGFloat(rangeLimited)
         
         switch sender.state {
         case .began:
@@ -1812,7 +1826,7 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
         }
         
         //该分区每个点的间隔宽度
-        let plotWidth = (section.frame.size.width - section.padding.left - section.padding.right) / CGFloat(self.rangeTo - self.rangeFrom)
+        let plotWidth = (section.frame.size.width - section.padding.left - section.padding.right) / CGFloat(rangeLimited)
         
         
         //双指合拢或张开
@@ -1826,7 +1840,7 @@ extension CHKLineChartView: UIGestureRecognizerDelegate {
         
         let newRangeF = (section.frame.size.width - section.padding.left - section.padding.right) / newPlotWidth
         newRange = scale > 1 ? Int(newRangeF + 1) : Int(newRangeF)
-        let distance = abs(self.range - newRange)
+        let distance = abs(self.rangeLimited - newRange)
         //放大缩小的距离为偶数
         if distance % 2 == 0 && distance > 0 {
 //            print("scale = \(scale)")
