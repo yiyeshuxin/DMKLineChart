@@ -508,7 +508,7 @@ open class CHKLineChartView: UIView {
         self.selectedXAxisLabel?.backgroundColor = self.selectedBGColor
         self.selectedXAxisLabel?.textColor = self.selectedTextColor
         
-        let yaxis = section!.yAxis
+//        let yaxis = section!.yAxis
 //        let format = "%.".appendingFormat("%df", yaxis.decimal)
         
         self.selectedPoint = point
