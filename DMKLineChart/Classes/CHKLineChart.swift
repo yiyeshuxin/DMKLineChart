@@ -509,7 +509,7 @@ open class CHKLineChartView: UIView {
         self.selectedXAxisLabel?.textColor = self.selectedTextColor
         
         let yaxis = section!.yAxis
-        let format = "%.".appendingFormat("%df", yaxis.decimal)
+//        let format = "%.".appendingFormat("%df", yaxis.decimal)
         
         self.selectedPoint = point
         
@@ -1463,7 +1463,6 @@ extension CHKLineChartView {
         
         var newRangeTo = 0
         var newRangeFrom = 0
-        var newRange = 0
         
         if enlarge {
             //双指张开
